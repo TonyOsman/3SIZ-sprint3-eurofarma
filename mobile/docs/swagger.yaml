@@ -1,0 +1,659 @@
+openapi: 3.0.3
+info:
+  title: Eurofarma Training API
+  description: API REST para a plataforma de treinamento corporativo da Eurofarma
+  version: 1.0.0
+  contact:
+    name: Equipe de Desenvolvimento
+    email: dev@eurofarma.com.br
+servers:
+  - url: http://localhost:8080/api
+    description: Servidor de Desenvolvimento
+  - url: https://api.eurofarma.com.br/api
+    description: Servidor de Producao
+
+tags:
+  - name: Autenticacao
+    description: Endpoints de autenticacao
+  - name: Usuarios
+    description: Gerenciamento de usuarios
+  - name: Cursos
+    description: Gerenciamento de cursos e treinamentos
+  - name: Ranking
+    description: Sistema de ranking e gamificacao
+  - name: Conquistas
+    description: Sistema de conquistas e badges
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Autenticacao
+      summary: Realizar login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Credenciais invalidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Autenticacao
+      summary: Renovar token JWT
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Token renovado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+  /usuarios/{id}:
+    get:
+      tags:
+        - Usuarios
+      summary: Obter perfil do usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Perfil do usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '404':
+          description: Usuario nao encontrado
+    put:
+      tags:
+        - Usuarios
+      summary: Atualizar perfil do usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsuarioUpdate'
+      responses:
+        '200':
+          description: Usuario atualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+
+  /cursos:
+    get:
+      tags:
+        - Cursos
+      summary: Listar todos os cursos
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tipo
+          in: query
+          schema:
+            type: string
+            enum: [OBRIGATORIO, ESPECIFICO, ALEATORIO]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Lista de cursos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageCurso'
+
+  /cursos/{id}:
+    get:
+      tags:
+        - Cursos
+      summary: Obter detalhes do curso
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Detalhes do curso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CursoDetalhado'
+        '404':
+          description: Curso nao encontrado
+
+  /cursos/{id}/progresso:
+    post:
+      tags:
+        - Cursos
+      summary: Registrar progresso em uma licao
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgressoRequest'
+      responses:
+        '200':
+          description: Progresso registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressoResponse'
+
+  /cursos/{id}/comentarios:
+    get:
+      tags:
+        - Cursos
+      summary: Listar comentarios do curso
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Lista de comentarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comentario'
+    post:
+      tags:
+        - Cursos
+      summary: Adicionar comentario ao curso
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ComentarioRequest'
+      responses:
+        '201':
+          description: Comentario criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comentario'
+
+  /ranking:
+    get:
+      tags:
+        - Ranking
+      summary: Obter ranking geral
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Ranking de usuarios
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageRanking'
+
+  /ranking/departamento/{nome}:
+    get:
+      tags:
+        - Ranking
+      summary: Obter ranking por departamento
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: nome
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ranking do departamento
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageRanking'
+
+  /conquistas:
+    get:
+      tags:
+        - Conquistas
+      summary: Listar todas as conquistas
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de conquistas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conquista'
+
+  /conquistas/usuario/{usuarioId}:
+    get:
+      tags:
+        - Conquistas
+      summary: Listar conquistas do usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: usuarioId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Conquistas do usuario
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ConquistaUsuario'
+
+  /conquistas/{id}/desbloquear:
+    post:
+      tags:
+        - Conquistas
+      summary: Desbloquear conquista para usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Conquista desbloqueada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConquistaUsuario'
+        '409':
+          description: Conquista ja desbloqueada
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - usuario
+        - senha
+      properties:
+        usuario:
+          type: string
+          example: "inacia.santos"
+        senha:
+          type: string
+          format: password
+          example: "senha123"
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        tipo:
+          type: string
+          example: "Bearer"
+        expiresIn:
+          type: integer
+          format: int64
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nome:
+          type: string
+          example: "Inacia Santos"
+        email:
+          type: string
+          format: email
+        departamento:
+          type: string
+          example: "RH"
+        nivel:
+          type: string
+          example: "Avancado"
+        xpTotal:
+          type: integer
+          example: 9800
+        videosVistos:
+          type: integer
+          example: 100
+        cursosConcluidos:
+          type: integer
+          example: 7
+        avatarUrl:
+          type: string
+        criadoEm:
+          type: string
+          format: date-time
+
+    UsuarioUpdate:
+      type: object
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        avatarUrl:
+          type: string
+
+    Curso:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titulo:
+          type: string
+          example: "Treinamento Obrigatorio"
+        descricao:
+          type: string
+        tipo:
+          type: string
+          enum: [OBRIGATORIO, ESPECIFICO, ALEATORIO]
+        progresso:
+          type: number
+          format: float
+          example: 0.4
+        thumbnailUrl:
+          type: string
+
+    CursoDetalhado:
+      allOf:
+        - $ref: '#/components/schemas/Curso'
+        - type: object
+          properties:
+            modulos:
+              type: array
+              items:
+                $ref: '#/components/schemas/Modulo'
+            visualizacoes:
+              type: integer
+              example: 13900
+            duracao:
+              type: string
+              example: "7 dias"
+            totalLicoes:
+              type: integer
+              example: 24
+            aoVivo:
+              type: boolean
+
+    Modulo:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titulo:
+          type: string
+          example: "Primeiro modulo"
+        licoesConcluidas:
+          type: integer
+        totalLicoes:
+          type: integer
+        licoes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Licao'
+
+    Licao:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        titulo:
+          type: string
+          example: "Introducao"
+        subtitulo:
+          type: string
+        concluida:
+          type: boolean
+        videoUrl:
+          type: string
+
+    ProgressoRequest:
+      type: object
+      required:
+        - licaoId
+      properties:
+        licaoId:
+          type: integer
+          format: int64
+        concluida:
+          type: boolean
+          default: true
+
+    ProgressoResponse:
+      type: object
+      properties:
+        cursoId:
+          type: integer
+          format: int64
+        licaoId:
+          type: integer
+          format: int64
+        progressoTotal:
+          type: number
+          format: float
+        xpGanho:
+          type: integer
+        novasConquistas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Conquista'
+
+    Comentario:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        usuarioNome:
+          type: string
+        usuarioAvatar:
+          type: string
+        texto:
+          type: string
+        criadoEm:
+          type: string
+          format: date-time
+
+    ComentarioRequest:
+      type: object
+      required:
+        - texto
+      properties:
+        texto:
+          type: string
+          maxLength: 500
+
+    RankingEntry:
+      type: object
+      properties:
+        posicao:
+          type: integer
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+        xp:
+          type: integer
+
+    Conquista:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        nome:
+          type: string
+          example: "LGPD"
+        descricao:
+          type: string
+        xp:
+          type: integer
+          example: 500
+        icone:
+          type: string
+          example: "lock"
+
+    ConquistaUsuario:
+      type: object
+      properties:
+        conquista:
+          $ref: '#/components/schemas/Conquista'
+        desbloqueadaEm:
+          type: string
+          format: date-time
+
+    PageCurso:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Curso'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    PageRanking:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/RankingEntry'
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+        size:
+          type: integer
+        number:
+          type: integer
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
