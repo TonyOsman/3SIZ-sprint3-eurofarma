@@ -1,90 +1,65 @@
-# Eurofarma - Plataforma de Treinamento Corporativo
+# Onboard360 - Plataforma de Onboarding Eurofarma
 
-Sistema de treinamento corporativo com gamificacao para colaboradores da Eurofarma.
+**Grupo:** 3SIZ - Onboard360  
+**Challenge:** Eurofarma - Sistema de Onboarding Corporativo
 
-## Arquitetura
-
-- **Mobile**: App Android (Kotlin + Jetpack Compose)
-- **Backend**: API REST (Spring Boot + Kotlin)
-- **Banco de Dados**: PostgreSQL
-- **Documentacao**: Swagger/OpenAPI 3.0
+Plataforma centralizada de onboarding que integra treinamentos, gamificação e compliance para novos colaboradores da Eurofarma.
 
 ## Estrutura do Projeto
 
 ```
-eurofarma-projeto/
-├── mobile/                    # App Android
-│   └── app/src/main/java/     # Codigo fonte Kotlin
-├── backend/                   # API REST
-│   ├── src/main/kotlin/       # Codigo fonte
-│   └── src/test/kotlin/       # Testes
+Eurofarma/
+├── app/                       # App Android (Kotlin + Jetpack Compose)
+│   └── src/main/java/         # Telas: Login, Cursos, Ranking, Perfil, 3D
+├── backend/                   # API REST (Spring Boot + Kotlin)
+│   ├── src/main/kotlin/       # Controllers, Services, Models, Repositories
+│   └── src/test/kotlin/       # Testes unitarios e integracao
 ├── docs/                      # Documentacao
-│   ├── diagrams/              # Diagramas C4
-│   └── swagger.yaml           # Especificacao OpenAPI
-└── README.md
+│   ├── swagger.yaml           # Documentacao OpenAPI/Swagger
+│   └── diagrams/              # Diagramas C4 (niveis 1, 2 e 3)
+└── README.md                  # Este arquivo
 ```
 
-## Pre-requisitos
+## Tecnologias Utilizadas
+
+### Mobile (Android)
+- Kotlin 1.9.21
+- Jetpack Compose (UI declarativa)
+- Navigation Compose
+- Filament (renderizacao 3D)
+- Material Design 3
 
 ### Backend
-- JDK 17+
-- Gradle 8.x
-- PostgreSQL 14+
-- Docker (opcional)
+- Spring Boot 3.2
+- Kotlin
+- Spring Data JPA
+- PostgreSQL
+- Swagger/OpenAPI 3.0
+- JWT para autenticacao
 
-### Mobile
-- Android Studio Hedgehog+
-- SDK Android 24+ (minSdk) / 34 (targetSdk)
-- Kotlin 1.9+
+## Como Executar o App Android
 
-## Como Executar
+1. Abrir o projeto no Android Studio
+2. Aguardar o Gradle Sync
+3. Conectar dispositivo ou iniciar emulador
+4. Run > Run 'app'
 
-### 1. Banco de Dados
-
-```bash
-# Via Docker
-docker run -d --name eurofarma-db \
-  -e POSTGRES_USER=eurofarma \
-  -e POSTGRES_PASSWORD=eurofarma123 \
-  -e POSTGRES_DB=eurofarma_db \
-  -p 5432:5432 \
-  postgres:14
-
-# Ou configure manualmente no PostgreSQL local
-```
-
-### 2. Backend
+## Como Executar o Backend
 
 ```bash
 cd backend
 
-# Configurar variaveis de ambiente (opcional)
-export DB_HOST=localhost
-export DB_PORT=5432
-export DB_NAME=eurofarma_db
-export DB_USER=eurofarma
-export DB_PASSWORD=eurofarma123
+# Subir PostgreSQL (Docker)
+docker run -d --name eurofarma-db \
+  -e POSTGRES_USER=eurofarma \
+  -e POSTGRES_PASSWORD=eurofarma123 \
+  -e POSTGRES_DB=eurofarma_db \
+  -p 5432:5432 postgres:14
 
-# Executar
+# Executar API
 ./gradlew bootRun
 
-# API disponivel em: http://localhost:8080
 # Swagger UI: http://localhost:8080/swagger-ui.html
-```
-
-### 3. Mobile
-
-```bash
-cd mobile
-
-# Via Android Studio
-# 1. Abrir o projeto no Android Studio
-# 2. Sync Gradle
-# 3. Run > Run 'app'
-
-# Via linha de comando
-./gradlew assembleDebug
-./gradlew installDebug
 ```
 
 ## Endpoints da API
@@ -93,50 +68,93 @@ cd mobile
 |--------|----------|-----------|
 | POST | /api/auth/login | Autenticacao |
 | GET | /api/usuarios/{id} | Perfil do usuario |
-| PUT | /api/usuarios/{id} | Atualizar perfil |
 | GET | /api/cursos | Listar cursos |
 | GET | /api/cursos/{id} | Detalhes do curso |
 | POST | /api/cursos/{id}/progresso | Registrar progresso |
 | GET | /api/ranking | Ranking geral |
-| GET | /api/ranking/departamento/{nome} | Ranking por departamento |
 | GET | /api/conquistas | Listar conquistas |
-| POST | /api/conquistas/{id}/desbloquear | Desbloquear conquista |
 
 ## Testes
 
-### Backend
 ```bash
-cd backend
-./gradlew test              # Testes unitarios
-./gradlew integrationTest   # Testes de integracao
-./gradlew jacocoTestReport  # Relatorio de cobertura
+# Backend - Testes unitarios
+cd backend && ./gradlew test
+
+# Backend - Testes de integracao  
+cd backend && ./gradlew integrationTest
+
+# Mobile - Testes unitarios
+./gradlew test
 ```
 
-### Mobile
-```bash
-cd mobile
-./gradlew test              # Testes unitarios
-./gradlew connectedTest     # Testes instrumentados
-```
+---
 
-## Documentacao
+## ENTREGAVEIS DO PROJETO
 
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI JSON**: http://localhost:8080/v3/api-docs
-- **Diagramas C4**: docs/diagrams/
+### a) Documentacao Swagger das APIs
+- **Arquivo**: `docs/swagger.yaml`
+- **Conteudo**: Especificacao OpenAPI 3.0 com todos os endpoints, schemas e contratos
+- **Visualizar**: http://localhost:8080/swagger-ui.html (com backend rodando)
 
-## Variaveis de Ambiente
+### b) Esqueleto Funcional da Solucao
 
-| Variavel | Descricao | Padrao |
-|----------|-----------|--------|
-| DB_HOST | Host do PostgreSQL | localhost |
-| DB_PORT | Porta do PostgreSQL | 5432 |
-| DB_NAME | Nome do banco | eurofarma_db |
-| DB_USER | Usuario do banco | eurofarma |
-| DB_PASSWORD | Senha do banco | eurofarma123 |
-| JWT_SECRET | Secret para JWT | (gerado) |
-| JWT_EXPIRATION | Expiracao JWT (ms) | 86400000 |
+**Modulos Mobile** (`app/src/main/java/br/com/inaciasantos/eurofarma/`):
+| Arquivo | Descricao |
+|---------|-----------|
+| LoginScreen.kt | Tela de autenticacao |
+| MainScreen.kt | Lista de treinamentos com cards de progresso |
+| CursoScreen.kt | Detalhes do curso com video, modulos e comentarios |
+| RankingScreen.kt | Ranking gamificado de colaboradores |
+| PerfilScreen.kt | Perfil do usuario com conquistas e XP |
+| Model3DScreen.kt | Visualizacao de modelo 3D (Filament) |
+| AppNavigation.kt | Navegacao entre telas |
+
+**Modulos Backend** (`backend/src/main/kotlin/com/eurofarma/`):
+| Pasta | Descricao |
+|-------|-----------|
+| controller/ | Endpoints REST (CursoController, RankingController) |
+| service/ | Logica de negocio (CursoService, GamificacaoService, ProgressoService) |
+| repository/ | Acesso a dados JPA |
+| model/ | Entidades (Usuario, Curso, Modulo, Licao, Progresso, Conquista) |
+| config/ | Configuracoes (Swagger, Security) |
+
+### c) Integracao com Banco de Dados
+- **Banco**: PostgreSQL via Spring Data JPA
+- **Entidades**: Usuario, Curso, Modulo, Licao, Progresso, Conquista, Comentario
+- **Configuracao**: `backend/src/main/resources/application.yml`
+
+### d) README Detalhado
+- **Este arquivo** com instrucoes completas de execucao
+
+### e) Diagramas C4
+
+| Nivel | Arquivo | Descricao |
+|-------|---------|-----------|
+| 1 | `docs/diagrams/c4-nivel1-contexto.md` | Visao geral: usuarios e sistemas externos |
+| 2 | `docs/diagrams/c4-nivel2-container.md` | Containers: Mobile, API, Database, Cache |
+| 3 | `docs/diagrams/c4-nivel3-componente.md` | Componentes internos do backend |
+
+### f) Testes Unitarios e de Integracao
+
+| Arquivo | Tipo | Descricao |
+|---------|------|-----------|
+| `backend/src/test/.../CursoServiceTest.kt` | Unitario | Testes do servico de cursos |
+| `backend/src/test/.../GamificacaoServiceTest.kt` | Unitario | Testes de ranking e conquistas |
+| `backend/src/test/.../CursoControllerIntegrationTest.kt` | Integracao | Testes E2E dos endpoints |
+| `app/src/test/.../LoginScreenTest.kt` | Unitario | Testes do app Android |
+| `app/src/test/.../Model3DScreenTest.kt` | Unitario | Testes do app Android |
+
+---
+
+## Equipe - Grupo Onboard360
+
+| Nome | RM |
+|------|-----|
+| Tony Khaled Osman | RM553050 |
+| Enzo Gabriel Nicolosi Croquer | RM553213 |
+| Rickson Shiniti Hirata | RM553921 |
+| Bruna Oliveira Gomes | RM553135 |
+| Inacia dos Santos Silva | RM553401 |
 
 ## Licenca
-
-Copyright 2026 Inacia Santos - Todos os direitos reservados.
+Copyright 2026 - FIAP - Todos os direitos reservados.
